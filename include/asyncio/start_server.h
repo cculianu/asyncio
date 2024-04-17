@@ -39,7 +39,10 @@ struct Server: NonCopyable {
             socklen_t addrlen = sizeof(remoteaddr);
             co_await ev_awaiter;
             int clientfd = ::accept(fd_, reinterpret_cast<sockaddr*>(&remoteaddr), &addrlen);
-            if (clientfd == -1) { continue; }
+            if (clientfd == -1) {
+                if (errno == EINTR) continue;
+                throw std::system_error(std::make_error_code(static_cast<std::errc>(errno)));
+            }
             connected.emplace_back(schedule_task(connect_cb_(Stream{clientfd, remoteaddr})));
             // garbage collect
             clean_up_connected(connected);

@@ -5,8 +5,8 @@ project(${TARGET_NAME}
         VERSION ${PROJECT_VERSION}
         LANGUAGES CXX)
 
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
-set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer")
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,7 +18,10 @@ set(ASYNCIO_INC
         include/asyncio/event_loop.h
         include/asyncio/runner.h
         include/asyncio/handle.h
+        include/asyncio/concept/awaitable.h
+        include/asyncio/concept/bytebuf.h
         include/asyncio/concept/future.h
+        include/asyncio/concept/promise.h
         include/asyncio/noncopyable.h
         include/asyncio/selector/epoll_selector.h
         include/asyncio/selector/kqueue_selector.h
@@ -69,7 +72,7 @@ PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
 )
 
-target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
+target_compile_options(${PROJECT_NAME} PUBLIC -fPIC -Wall)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

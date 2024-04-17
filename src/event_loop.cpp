@@ -2,6 +2,7 @@
 // Created by netcan on 2021/09/07.
 //
 #include <chrono>
+#include <memory>
 #include <optional>
 #include <asyncio/event_loop.h>
 
@@ -9,8 +10,9 @@ namespace ranges = std::ranges;
 
 ASYNCIO_NS_BEGIN
 EventLoop& get_event_loop() {
-    static EventLoop loop;
-    return loop;
+    thread_local std::unique_ptr<EventLoop> loop;
+    if (!loop) [[unlikely]] loop = std::make_unique<EventLoop>();
+    return *loop;
 }
 
 void EventLoop::run_until_complete() {

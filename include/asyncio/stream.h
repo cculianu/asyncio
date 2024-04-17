@@ -5,17 +5,20 @@
 #ifndef ASYNCIO_STREAM_H
 #define ASYNCIO_STREAM_H
 #include <asyncio/asyncio_ns.h>
+#include <asyncio/concept/bytebuf.h>
 #include <asyncio/event_loop.h>
-#include <asyncio/selector/event.h>
 #include <asyncio/noncopyable.h>
+#include <asyncio/selector/event.h>
 #include <asyncio/task.h>
+
+#include <utility>
+#include <vector>
+
+#include <fcntl.h>
+#include <netdb.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <netdb.h>
-#include <utility>
-#include <vector>
 
 #ifndef SOCK_NONBLOCK /* If Protocol not supported */
     #define SOCK_NONBLOCK 0
@@ -54,14 +57,14 @@ namespace socket {
 }
 
 struct Stream: NonCopyable {
-    using Buffer = std::vector<char>;
-    Stream(int fd): read_fd_(fd), write_fd_(dup(fd)) {
+    using Buffer = std::vector<char>; // Default buffer for read() if nothing specified
+    Stream(int fd): read_fd_(fd), write_fd_(fd) {
         if (read_fd_ >= 0) {
             socklen_t addrlen = sizeof(sock_info_);
             getsockname(read_fd_, reinterpret_cast<sockaddr*>(&sock_info_), &addrlen);
         }
     }
-    Stream(int fd, const sockaddr_storage& sockinfo): read_fd_(fd), write_fd_(dup(fd)), sock_info_(sockinfo) { }
+    Stream(int fd, const sockaddr_storage& sockinfo): read_fd_(fd), write_fd_(fd), sock_info_(sockinfo) { }
     Stream(Stream&& other): read_fd_{std::exchange(other.read_fd_, -1) },
                             write_fd_{std::exchange(other.write_fd_, -1) },
                             read_ev_{ std::exchange(other.read_ev_, {}) },
@@ -74,36 +77,38 @@ struct Stream: NonCopyable {
     void close() {
         read_awaiter_.destroy();
         write_awaiter_.destroy();
-        if (read_fd_ > 0) { ::close(read_fd_); }
-        if (write_fd_ > 0) { ::close(write_fd_); }
+        if (read_fd_ >= 0) { ::close(read_fd_); }
+        if (write_fd_ >= 0 && write_fd_ != read_fd_) { ::close(write_fd_); }
         read_fd_ = -1;
         write_fd_ = -1;
     }
 
-    Task<Buffer> read(ssize_t sz = -1) {
-        if (sz < 0) { co_return co_await read_until_eof(); }
+    template <concepts::MutableByteBuf BUF = Buffer>
+    Task<BUF> read(ssize_t sz = -1) {
+        if (sz < 0) { co_return co_await read_until_eof<BUF>(); }
 
-        Buffer result(sz, 0);
+        BUF result(size_t(sz), typename BUF::value_type{});
         co_await read_awaiter_;
         sz = ::read(read_fd_, result.data(), result.size());
-        if (sz == -1) {
+        if (sz < 0) {
             throw std::system_error(std::make_error_code(static_cast<std::errc>(errno)));
         }
         result.resize(sz);
         co_return result;
     }
 
-    Task<> write(const Buffer& buf) {
-        auto& loop = get_event_loop();
-        ssize_t total_write = 0;
+    template<concepts::ByteBuf BUF>
+    Task<> write(const BUF& buf) {
+        size_t total_write = 0;
         while (total_write < buf.size()) {
-            // FIXME: how to handle write event?
-            // co_await write_awaiter_;
+            co_await write_awaiter_;
             ssize_t sz = ::write(write_fd_, buf.data() + total_write, buf.size() - total_write);
-            if (sz == -1) {
+            if (sz < 0) {
                 throw std::system_error(std::make_error_code(static_cast<std::errc>(errno)));
+            } else if (sz == 0) {
+                throw std::system_error(std::error_code{}, "write() returned 0 bytes ... eof?");
             }
-            total_write += sz;
+            total_write += size_t(sz);
         }
         co_return;
     }
@@ -112,25 +117,24 @@ struct Stream: NonCopyable {
     }
 
 private:
-    Task<Buffer> read_until_eof() {
-        auto& loop = get_event_loop();
-
-        Buffer result(chunk_size, 0);
-        int current_read = 0;
-        int total_read = 0;
+    template <concepts::MutableByteBuf BUF = Buffer>
+    Task<BUF> read_until_eof() {
+        BUF result(chunk_size, typename BUF::value_type{});
+        ssize_t current_read = 0;
+        size_t total_read = 0;
         do {
             co_await read_awaiter_;
             current_read = ::read(read_fd_, result.data() + total_read, chunk_size);
-            if (current_read == -1) {
+            if (current_read < 0) {
                 throw std::system_error(std::make_error_code(static_cast<std::errc>(errno)));
             }
-            if (current_read < chunk_size) { result.resize(total_read + current_read); }
+            if (size_t(current_read) < chunk_size) { result.resize(total_read + current_read); }
             total_read += current_read;
             result.resize(total_read + chunk_size);
         } while (current_read > 0);
         co_return result;
     }
-private:
+
     int read_fd_{-1};
     int write_fd_{-1};
     Event read_ev_ { .fd = read_fd_, .flags = Event::Flags::EVENT_READ };
@@ -149,7 +153,7 @@ inline const void *get_in_addr(const sockaddr *sa) {
     return &reinterpret_cast<const sockaddr_in6*>(sa)->sin6_addr;
 }
 
-uint16_t get_in_port(const sockaddr *sa) {
+inline uint16_t get_in_port(const sockaddr *sa) {
     if (sa->sa_family == AF_INET) {
         return ntohs(reinterpret_cast<const sockaddr_in*>(sa)->sin_port);
     }

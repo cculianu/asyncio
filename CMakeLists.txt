@@ -47,7 +47,10 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 option(BUILD_TESTING "Build the tests" OFF)
 add_library(asyncio
         ${ASYNC_INC}
-        src/event_loop.cpp)
+        src/event_loop.cpp
+        src/open_connection.cpp
+        src/stream.cpp
+)
 
 if (BUILD_TESTING)
     add_subdirectory(third_party/Catch2)

@@ -14,4 +14,8 @@ requires requires (T t) {
 }
 auto Spanify(T && t) { return std::span(t.data(), t.size()); }
 
+// helper type for std::visit
+template<class... Ts> struct Overloaded : Ts... { using Ts::operator()...; };
+template<class... Ts> Overloaded(Ts...) -> Overloaded<Ts...>;
+
 ASYNCIO_NS_END

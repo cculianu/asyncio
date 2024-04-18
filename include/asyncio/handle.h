@@ -5,9 +5,11 @@
 #ifndef ASYNCIO_HANDLE_H
 #define ASYNCIO_HANDLE_H
 #include <asyncio/asyncio_ns.h>
+#include <fmt/core.h>
+
+#include <atomic>
 #include <cstdint>
 #include <source_location>
-#include <fmt/core.h>
 
 ASYNCIO_NS_BEGIN
 // for cancelled
@@ -27,7 +29,7 @@ struct Handle { // type erase for EventLoop
     virtual ~Handle() = default;
 private:
     HandleId handle_id_;
-    static HandleId handle_id_generation_;
+    static std::atomic<HandleId> handle_id_generation_;
 protected:
     State state_ {Handle::UNSCHEDULED};
 };
@@ -40,7 +42,7 @@ struct HandleInfo {
     Handle* handle { };
 };
 
-struct CoroHandle: Handle {
+struct CoroHandle : Handle {
     std::string frame_name() const {
         const auto& frame_info = get_frame_info();
         return fmt::format("{} at {}:{}", frame_info.function_name(),

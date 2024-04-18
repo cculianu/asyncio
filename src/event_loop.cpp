@@ -69,7 +69,7 @@ void EventLoop::run_once() {
     cleanup_delayed_call();
 }
 
-HandleId Handle::handle_id_generation_ = 0;
+std::atomic<HandleId> Handle::handle_id_generation_ = 0;
 
 const std::source_location& CoroHandle::get_frame_info() const {
     static const std::source_location frame_info = std::source_location::current();

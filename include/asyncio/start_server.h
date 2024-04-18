@@ -2,14 +2,16 @@
 // Created by netcan on 2021/11/30.
 //
 
-#ifndef ASYNCIO_START_SERVER_H
-#define ASYNCIO_START_SERVER_H
-#include "fmt/core.h"
+#pragma once
 #include <asyncio/asyncio_ns.h>
-#include <asyncio/stream.h>
 #include <asyncio/finally.h>
 #include <asyncio/schedule_task.h>
+#include <asyncio/stream.h>
+
+#include <fmt/core.h>
+
 #include <list>
+
 #include <sys/types.h>
 
 ASYNCIO_NS_BEGIN
@@ -23,7 +25,7 @@ concept ConnectCb = requires(CONNECT_CB cb) {
 constexpr static size_t max_connect_count = 16;
 
 template<concepts::ConnectCb CONNECT_CB>
-struct Server: NonCopyable {
+struct Server : NonCopyable {
     Server(CONNECT_CB cb, int fd): connect_cb_(cb), fd_(fd) {}
     Server(Server&& other): connect_cb_(other.connect_cb_),
                             fd_{std::exchange(other.fd_, -1) } {}
@@ -87,7 +89,7 @@ Task<Server<CONNECT_CB>> start_server(CONNECT_CB cb, std::string_view ip, uint16
 
     int serverfd = -1;
     for (auto p = server_info; p != nullptr; p = p->ai_next) {
-        if ((serverfd = ::socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK, p->ai_protocol)) == -1) {
+        if ((serverfd = ::socket(p->ai_family, p->ai_socktype | socket::NonBlockFlag, p->ai_protocol)) == -1) {
             continue;
         }
         socket::set_blocking(serverfd, false);
@@ -112,5 +114,3 @@ Task<Server<CONNECT_CB>> start_server(CONNECT_CB cb, std::string_view ip, uint16
 }
 
 ASYNCIO_NS_END
-
-#endif // ASYNCIO_START_SERVER_H

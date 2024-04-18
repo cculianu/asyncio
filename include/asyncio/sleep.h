@@ -11,7 +11,7 @@
 ASYNCIO_NS_BEGIN
 namespace detail {
 template<typename Duration>
-struct SleepAwaiter: private NonCopyable {
+struct SleepAwaiter : private NonCopyable {
     explicit SleepAwaiter(Duration delay): delay_(delay) {}
     constexpr bool await_ready() noexcept { return false; }
     constexpr void await_resume() const noexcept {}
@@ -28,7 +28,7 @@ template<typename Rep, typename Period>
 Task<> sleep(NoWaitAtInitialSuspend, std::chrono::duration<Rep, Period> delay) {
     co_await detail::SleepAwaiter {delay};
 }
-}
+} // namespace detaul
 
 template<typename Rep, typename Period>
 [[nodiscard("discard sleep doesn't make sense")]]

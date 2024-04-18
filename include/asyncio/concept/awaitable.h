@@ -2,26 +2,25 @@
 // Created by netcan on 2021/11/22.
 //
 
-#ifndef ASYNCIO_AWAITABLE_H
-#define ASYNCIO_AWAITABLE_H
+#pragma once
 #include <asyncio/asyncio_ns.h>
 #include <coroutine>
 #include <utility>
 ASYNCIO_NS_BEGIN
 namespace detail {
 template<typename A>
-struct GetAwaiter: std::type_identity<A> { };
+struct GetAwaiter : std::type_identity<A> { };
 
 template<typename A>
 requires requires(A&& a) { std::forward<A>(a).operator co_await(); }
-struct GetAwaiter<A>: std::type_identity<decltype(std::declval<A>().operator co_await())> { };
+struct GetAwaiter<A> : std::type_identity<decltype(std::declval<A>().operator co_await())> { };
 
 template<typename A>
 requires requires(A&& a) {
     operator co_await(std::forward<A>(a));
     requires ! (requires { std::forward<A>(a).operator co_await(); });
 }
-struct GetAwaiter<A>: std::type_identity<decltype(operator co_await(std::declval<A>()))> { };
+struct GetAwaiter<A> : std::type_identity<decltype(operator co_await(std::declval<A>()))> { };
 
 template<typename A>
 using GetAwaiter_t = typename GetAwaiter<A>::type;
@@ -47,4 +46,3 @@ static_assert(concepts::Awaitable<std::suspend_always>);
 static_assert(concepts::Awaitable<std::suspend_never>);
 
 ASYNCIO_NS_END
-#endif // ASYNCIO_AWAITABLE_H

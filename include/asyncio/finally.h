@@ -23,10 +23,8 @@
 // SOFTWARE.
 //
 
-#ifndef ASYNCIO_FINALLY_H
-#define ASYNCIO_FINALLY_H
+#pragma once
 #include <asyncio/asyncio_ns.h>
-#include <functional>
 #include <utility>
 
 ASYNCIO_NS_BEGIN
@@ -44,9 +42,7 @@ public:
 
     FinalAction &operator=(const FinalAction &) = delete;
 
-    ~FinalAction() noexcept {
-        if (invoke_) f_();
-    }
+    ~FinalAction() { if (invoke_) f_(); }
 
 private:
     F f_;
@@ -54,14 +50,10 @@ private:
 };
 
 template<class F>
-inline FinalAction<F> _finally(const F &f) noexcept {
-    return FinalAction<F>(f);
-}
+inline FinalAction<F> _finally(const F &f) noexcept { return FinalAction<F>(f); }
 
 template<class F>
-inline FinalAction<F> _finally(F &&f) noexcept {
-    return FinalAction<F>(std::forward<F>(f));
-}
+inline FinalAction<F> _finally(F &&f) noexcept { return FinalAction<F>(std::forward<F>(f)); }
 
 #define concat1(a, b)       a ## b
 #define concat2(a, b)       concat1(a, b)
@@ -70,5 +62,3 @@ inline FinalAction<F> _finally(F &&f) noexcept {
 #define finally2(func)      ASYNCIO_NS::FinalAction _finally_object = ASYNCIO_NS::_finally(func)
 
 ASYNCIO_NS_END
-
-#endif //ASYNCIO_FINALLY_H

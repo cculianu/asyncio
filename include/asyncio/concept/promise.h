@@ -1,7 +1,7 @@
 //
 // Created by netcan on 2021/12/13.
 //
-#ifndef ASYNCIO_PROMISE_H
+#pragma once
 #include <asyncio/asyncio_ns.h>
 #include <asyncio/concept/awaitable.h>
 #include <asyncio/concept/future.h>
@@ -18,4 +18,3 @@ concept Promise = requires (P p) {
 };
 }
 ASYNCIO_NS_END
-#endif

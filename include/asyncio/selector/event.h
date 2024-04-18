@@ -2,11 +2,10 @@
 // Created by netcan on 2021/10/24.
 //
 
-#ifndef ASYNCIO_EVENT_H
-#define ASYNCIO_EVENT_H
-
+#pragma once
 #include <asyncio/asyncio_ns.h>
 #include <asyncio/handle.h>
+
 #include <cstdint>
 
 #if defined(__APPLE__)
@@ -38,5 +37,3 @@ struct Event {
     HandleInfo handle_info;
 };
 ASYNCIO_NS_END
-
-#endif //ASYNCIO_EVENT_H

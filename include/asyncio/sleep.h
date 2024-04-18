@@ -2,11 +2,10 @@
 // Created by netcan on 2021/11/21.
 //
 
-#ifndef ASYNCIO_SLEEP_H
-#define ASYNCIO_SLEEP_H
+#pragma once
 #include <asyncio/asyncio_ns.h>
-#include <asyncio/task.h>
 #include <asyncio/noncopyable.h>
+#include <asyncio/task.h>
 #include <chrono>
 ASYNCIO_NS_BEGIN
 namespace detail {
@@ -38,4 +37,3 @@ Task<> sleep(std::chrono::duration<Rep, Period> delay) {
 
 using namespace std::chrono_literals;
 ASYNCIO_NS_END
-#endif // ASYNCIO_SLEEP_H

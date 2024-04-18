@@ -2,22 +2,23 @@
 // Created by netcan on 2021/09/06.
 //
 
-#ifndef ASYNCIO_TASK_H
-#define ASYNCIO_TASK_H
-#include <asyncio/handle.h>
-#include <asyncio/event_loop.h>
-#include <asyncio/result.h>
+#pragma once
 #include <asyncio/concept/promise.h>
-#include <coroutine>
+#include <asyncio/event_loop.h>
+#include <asyncio/handle.h>
+#include <asyncio/noncopyable.h>
+#include <asyncio/result.h>
+
 #include <cassert>
-#include <variant>
-#include <memory>
+#include <coroutine>
 
 ASYNCIO_NS_BEGIN
+
 struct NoWaitAtInitialSuspend {};
 inline constexpr NoWaitAtInitialSuspend no_wait_at_initial_suspend;
+
 template<typename R = void>
-struct Task: private NonCopyable {
+struct Task : private NonCopyable {
     struct promise_type;
     using coro_handle = std::coroutine_handle<promise_type>;
 
@@ -76,7 +77,7 @@ struct Task: private NonCopyable {
         return Awaiter {handle_};
     }
 
-    struct promise_type: CoroHandle, Result<R> {
+    struct promise_type : CoroHandle, Result<R> {
         promise_type() = default;
 
         template<typename... Args> // from free function
@@ -143,4 +144,3 @@ private:
 static_assert(concepts::Promise<Task<>::promise_type>);
 static_assert(concepts::Future<Task<>>);
 ASYNCIO_NS_END
-#endif // ASYNCIO_TASK_H

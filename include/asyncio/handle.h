@@ -2,10 +2,10 @@
 // Created by netcan on 2021/09/08.
 //
 
-#ifndef ASYNCIO_HANDLE_H
-#define ASYNCIO_HANDLE_H
+#pragma once
 #include <asyncio/asyncio_ns.h>
-#include <fmt/core.h>
+
+#include <fmt/format.h>
 
 #include <atomic>
 #include <cstdint>
@@ -48,7 +48,7 @@ struct CoroHandle : Handle {
         return fmt::format("{} at {}:{}", frame_info.function_name(),
                            frame_info.file_name(), frame_info.line());
     }
-    virtual void dump_backtrace(size_t depth = 0) const {};
+    virtual void dump_backtrace(size_t depth [[maybe_unused]] = 0) const {};
     void schedule();
     void cancel();
 private:
@@ -56,5 +56,3 @@ private:
 };
 
 ASYNCIO_NS_END
-
-#endif // ASYNCIO_HANDLE_H

@@ -2,20 +2,19 @@
 // Created by netcan on 2021/11/20.
 //
 
-#ifndef ASYNCIO_GATHER_H
-#define ASYNCIO_GATHER_H
+#pragma once
 #include <asyncio/asyncio_ns.h>
+#include <asyncio/concept/awaitable.h>
+#include <asyncio/noncopyable.h>
 #include <asyncio/task.h>
 #include <asyncio/void_value.h>
-#include <asyncio/noncopyable.h>
-#include <asyncio/concept/awaitable.h>
 #include <stdexcept>
 #include <tuple>
 #include <variant>
 ASYNCIO_NS_BEGIN
 namespace detail {
 template<typename... Rs>
-class GatherAwaiter: NonCopyable {
+class GatherAwaiter : NonCopyable {
     using ResultTypes = std::tuple<GetTypeIfVoid_t<Rs>...>;
 public:
     constexpr bool await_ready() noexcept { return is_finished(); }
@@ -108,4 +107,3 @@ auto gather(Futs&&... futs) {
 }
 
 ASYNCIO_NS_END
-#endif // ASYNCIO_GATHER_H

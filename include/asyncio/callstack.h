@@ -2,11 +2,10 @@
 // Created by netcan on 2021/11/25.
 //
 
-#ifndef ASYNCIO_CALLSTACK_H
-#define ASYNCIO_CALLSTACK_H
+#pragma once
 #include <asyncio/asyncio_ns.h>
 #include <asyncio/noncopyable.h>
-#include <chrono>
+#include <coroutine>
 ASYNCIO_NS_BEGIN
 namespace detail {
 struct CallStackAwaiter {
@@ -18,10 +17,9 @@ struct CallStackAwaiter {
         return false;
     }
 };
-}
+} // namespace detail
 
-[[nodiscard]] auto dump_callstack() -> detail::CallStackAwaiter { return {}; }
+[[nodiscard]] inline auto dump_callstack() -> detail::CallStackAwaiter { return {}; }
 
 ASYNCIO_NS_END
 
-#endif // ASYNCIO_CALLSTACK_H

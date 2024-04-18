@@ -2,20 +2,27 @@
 // Created by netcan on 2021/11/21.
 //
 
-#ifndef ASYNCIO_WAIT_FOR_H
-#define ASYNCIO_WAIT_FOR_H
+#pragma once
 #include <asyncio/asyncio_ns.h>
-#include <asyncio/concept/future.h>
 #include <asyncio/concept/awaitable.h>
+#include <asyncio/concept/future.h>
 #include <asyncio/event_loop.h>
 #include <asyncio/exception.h>
-#include <asyncio/schedule_task.h>
+#include <asyncio/handle.h>
+#include <asyncio/noncopyable.h>
 #include <asyncio/result.h>
+#include <asyncio/schedule_task.h>
+#include <asyncio/task.h>
+
 #include <chrono>
+#include <coroutine>
+#include <type_traits>
+#include <utility>
+
 ASYNCIO_NS_BEGIN
 namespace detail {
 template<typename R, typename Duration>
-struct WaitForAwaiter: NonCopyable {
+struct WaitForAwaiter : NonCopyable {
     constexpr bool await_ready() noexcept { return result_.has_value(); }
     constexpr decltype(auto) await_resume() {
         return std::move(result_).result();
@@ -57,12 +64,12 @@ private:
     CoroHandle* continuation_{};
 
 private:
-    struct TimeoutHandle: Handle {
+    struct TimeoutHandle : Handle {
         TimeoutHandle(WaitForAwaiter& awaiter, Duration timeout)
         : awaiter_(awaiter) {
             get_event_loop().call_later(timeout, *this);
         }
-        void run() final { // timeout!
+        void run() override final { // timeout!
             awaiter_.wait_for_task_.cancel();
             awaiter_.result_.set_exception(std::make_exception_ptr(TimeoutError{}));
 
@@ -106,4 +113,3 @@ Task<AwaitResult<Fut>> wait_for(Fut&& fut, std::chrono::duration<Rep, Period> ti
     return detail::wait_for(no_wait_at_initial_suspend, std::forward<Fut>(fut), timeout);
 }
 ASYNCIO_NS_END
-#endif // ASYNCIO_WAIT_FOR_H

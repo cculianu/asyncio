@@ -2,12 +2,11 @@
 // Created by netcan on 2021/11/24.
 //
 
-#ifndef ASYNCIO_RESULT_H
-#define ASYNCIO_RESULT_H
+#pragma once
 #include <asyncio/asyncio_ns.h>
 #include <asyncio/exception.h>
-#include <variant>
 #include <optional>
+#include <variant>
 ASYNCIO_NS_BEGIN
 
 template<typename T>
@@ -71,4 +70,3 @@ private:
 };
 
 ASYNCIO_NS_END
-#endif // ASYNCIO_RESULT_H

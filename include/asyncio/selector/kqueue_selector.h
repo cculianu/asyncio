@@ -2,21 +2,20 @@
 // Created by netcan on 2021/10/24.
 //
 
-#ifndef ASYNCIO_KQUEUE_SELECTOR_H
-#define ASYNCIO_KQUEUE_SELECTOR_H
+#pragma once
 #include <asyncio/asyncio_ns.h>
 #include <asyncio/selector/event.h>
-#include <sys/types.h>
+
+#include <cerrno>
+#include <chrono>
+#include <cstdio>
+#include <ranges>
+#include <vector>
+
 #include <sys/event.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <unistd.h>
-#include <cerrno>
-#include <cstdio>
-#include <vector>
-#include <chrono>
-#include <ranges>
-#include <memory>
-
 
 ASYNCIO_NS_BEGIN
 struct KQueueSelector {
@@ -108,4 +107,3 @@ will return immediately even if there is a Fa timeout specified unlike select(2)
 };
 
 ASYNCIO_NS_END
-#endif //ASYNCIO_KQUEUE_SELECTOR_H

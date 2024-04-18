@@ -2,15 +2,14 @@
 // Created by netcan on 2021/11/21.
 //
 
-#ifndef ASYNCIO_SCHEDULE_TASK_H
-#define ASYNCIO_SCHEDULE_TASK_H
+#pragma once
 #include <asyncio/asyncio_ns.h>
-#include <asyncio/noncopyable.h>
 #include <asyncio/concept/future.h>
+#include <asyncio/noncopyable.h>
 ASYNCIO_NS_BEGIN
 
 template<concepts::Future Task>
-struct ScheduledTask: private NonCopyable {
+struct ScheduledTask : private NonCopyable {
     template<concepts::Future Fut>
     explicit ScheduledTask(Fut&& fut): task_(std::forward<Fut>(fut)) {
         if (task_.valid() && ! task_.done()) {
@@ -53,4 +52,3 @@ ScheduledTask<Fut> schedule_task(Fut&& fut) {
 }
 
 ASYNCIO_NS_END
-#endif // ASYNCIO_SCHEDULE_TASK_H

@@ -1,24 +1,23 @@
 //
 // Created by netcan on 2021/09/07.
 //
-#ifndef ASYNCIO_EVENT_LOOP_H
-#define ASYNCIO_EVENT_LOOP_H
-#define FMT_HEADER_ONLY
-#include <fmt/core.h>
-#include <fmt/format.h>
+#pragma once
+#include <asyncio/concept/future.h>
 #include <asyncio/handle.h>
 #include <asyncio/noncopyable.h>
-#include <asyncio/concept/future.h>
 #include <asyncio/selector/selector.h>
-#include <utility>
-#include <unordered_set>
+
+#include <fmt/core.h>
+#include <fmt/format.h>
+
 #include <algorithm>
-#include <queue>
 #include <chrono>
-#include <memory>
+#include <queue>
+#include <unordered_set>
+#include <utility>
 
 ASYNCIO_NS_BEGIN
-class EventLoop: private NonCopyable {
+class EventLoop : private NonCopyable {
     using MSDuration = std::chrono::milliseconds;
 public:
     EventLoop() {
@@ -117,7 +116,6 @@ private:
     std::unordered_set<HandleId> cancelled_;
 };
 
+// Returns the event loop for this thread. These live in thread_local storage so each thread has a unique EventLoop.
 EventLoop& get_event_loop();
 ASYNCIO_NS_END
-
-#endif // ASYNCIO_EVENT_LOOP_H

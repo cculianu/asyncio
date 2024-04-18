@@ -2,14 +2,17 @@
 // Created by netcan on 2021/10/09.
 //
 
-#ifndef ASYNCIO_EPOLL_SELECTOR_H
-#define ASYNCIO_EPOLL_SELECTOR_H
-#include "fmt/core.h"
+#pragma once
 #include <asyncio/asyncio_ns.h>
 #include <asyncio/selector/event.h>
+
+#include <fmt/core.h>
+
+#include <vector>
+
 #include <unistd.h>
 #include <sys/epoll.h>
-#include <vector>
+
 ASYNCIO_NS_BEGIN
 struct EpollSelector {
     EpollSelector(): epfd_(epoll_create1(0)) {
@@ -59,4 +62,3 @@ private:
     int register_event_count_ {1};
 };
 ASYNCIO_NS_END
-#endif // ASYNCIO_EPOLL_SELECTOR_H
